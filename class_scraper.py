@@ -125,7 +125,8 @@ def scrape_class(soup, cls_name):
     return { 'methods': methods, 'inherited': inherited }
 
 
-def _main():
+if __name__ == '__main__':
+    import requests
     url = 'http://docs.oracle.com/javase/7/docs/api/java/awt/Dialog.html'
     r = requests.get(url)
     sp = BeautifulSoup(r.text, 'lxml')
@@ -139,9 +140,4 @@ def _main():
     for key in class_def['inherited']:
         print(key, ': ', class_def['inherited'][key], sep='')
         print('')
-
-
-if __name__ == '__main__':
-    import requests
-    _main()
 

@@ -25,5 +25,5 @@ with open('pkg_list.json') as jsonfile:
     with ProcessPoolExecutor(4) as executor:
         for key in packages:
             name = key
-            url = _BASE_URL + dummy_run[key]
+            url = _BASE_URL + packages[key]
             executor.submit(scrape_package, name, url)

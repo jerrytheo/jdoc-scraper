@@ -1,9 +1,9 @@
 
 '''
 class_scrape.py -- A bunch of functions to scrape each class
-information form the online Java documentation.
+information from the online Java documentation.
 
-Copyright (C) Abhijit J. Theophilus (abhitheo96@gmail.com)
+Copyright (C) Abhijit J. Theophilus, abhitheo96@gmail.com
 For license see LICENSE.
 '''
 
@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 
 def parse_parameters(row):
-    
+
     '''Returns the parameters of the class as a dict of the form,
     parameter_type: parameter_label from its corresponding <tr> in the
     documentation <table>.
@@ -33,12 +33,12 @@ def parse_parameters(row):
     pmatch = re.search(pregex, td)
     if pmatch:
         # %20 is a space in HTTP requests.
-        ptypes = pmatch.group(1).split('%20')       
-        
+        ptypes = pmatch.group(1).split('%20')
+
         # Need to get every alternate element. e.g. 'a' from 'int a'.
         pnames = BeautifulSoup(pmatch.group(2), 'lxml').body.text.split()
         pnames = [ pnames[i] for i in range(1, len(pnames), 2) ]
-        
+
         # After the regex capture, both may have ,'s if not the last
         # parameter in the prototype.
         pdict = { key.strip(','): value.strip(',')
@@ -49,7 +49,7 @@ def parse_parameters(row):
 
 
 def parse_return_type(row):
-    
+
     '''Get the return type of the class from its corresponding <tr> in
     the documentation <table>.
     '''
@@ -69,9 +69,9 @@ def scrape_class(soup, cls_name):
 
     '''Parse the Class description page. Saves info regarding
     constructors and class methods.'''
-    
-    methods = [] 
-    
+
+    methods = []
+
     span = soup.find('span', string='Methods')
     # Not all classes have methods.
     if span:
@@ -94,13 +94,13 @@ def scrape_class(soup, cls_name):
                 'return': parse_return_type(row),
                 }
             methods.append(method_info)
-    
+
     # Handling constructors as follows,
     #   Return type -- Class name.
     #   Parameters  -- As specified.
     #   Name        -- Class name.
     #   Description -- As specified.
-    
+
     span = soup.find('span', string='Constructors')
     # Not all classes have constructors.
     if span:
@@ -128,7 +128,7 @@ def scrape_class(soup, cls_name):
                 'return': cls_name,
                 }
             methods.append(construct_info)
-    
+
     # Save all inherited functions for a future implementation.
     inherited = {}
     name_re = re.compile('methods_inherited_from_class_(.*)')
@@ -137,7 +137,7 @@ def scrape_class(soup, cls_name):
         name_mch = re.match(name_re, a['name'])
         if not name_mch: continue
         inherited[name_mch.group(1)] = a.parent.code.text.split(', ')
-        
+
     return { 'methods': methods, 'inherited': inherited }
 
 
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     r = requests.get(url)
     sp = BeautifulSoup(r.text, 'lxml')
     class_def = scrape_class(sp, 'java.awt.Dialog')
-    
+
     for i in class_def['methods']:
         for key in i:
             print(key, ': ', i[key], sep='')
@@ -156,4 +156,3 @@ if __name__ == '__main__':
     for key in class_def['inherited']:
         print(key, ': ', class_def['inherited'][key], sep='')
         print('')
-

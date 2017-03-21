@@ -2,7 +2,7 @@
 
 '''clean.py -- Small script to clean up the directory.
 
-Copyright (C) Abhijit J. Theophilus (abhitheo96@gmail.com)
+Copyright (C) Abhijit J. Theophilus, abhitheo96@gmail.com
 For license see LICENSE.
 '''
 

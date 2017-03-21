@@ -31,10 +31,13 @@ with open('pkg_list.json') as jsonfile:
 
 # If retry is specified, run only for failed/partially parsed packages.
 if len(sys.argv) == 2 and sys.argv[1] == '--retry':
-    with open('pkg_retry') as retryfile:
-        retry_for = retryfile.read()
-    retry_for = retry_for.split()
-    packages = { key: packages[key] for key in packages if key in retry_for }
+    if os.path.isfile('pkg_retry'):
+        with open('pkg_retry') as retryfile:
+            retry_for = retryfile.read()
+        retry_for = retry_for.split()
+        packages = { k: packages[k] for k in packages if k in retry_for }
+    else:
+        print('No pkg_retry file found.')
 
 # Print the header.
 header = '    {:>7}    {:^46}    {:>5}    {:>5}    {}'
@@ -70,11 +73,9 @@ with open('pkg_retry', 'w') as rf:
         except Exception as exc:
             rf.write(name + '\n')
             failure += 1
-            print(str(exc))
 
 print('\nTotal packages:', success+partial+failure+empties, 'packages')
 print('Complete:', success, 'packages')
 print('Incomplete:', partial, 'packages')
 print('Failed:', failure, 'packages')
 print('Empty:', empties, 'packages')
-

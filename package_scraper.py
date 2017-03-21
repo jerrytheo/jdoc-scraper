@@ -3,7 +3,7 @@
 package_scrap.py -- Function to scrape information for a given package
 from the online JAVA documentation.
 
-Copyright (C) Abhijit J. Theophilus (abhitheo96@gmail.com)
+Copyright (C) Abhijit J. Theophilus, abhitheo96@gmail.com
 For license see LICENSE.
 '''
 
@@ -78,7 +78,7 @@ def scrape_package(package_name, package_url):
     else:
         successes = 0
         package_info['classes'] = []
-        
+
         # Each class is parsed on one of 32 threads.
         nthreads = 32 if len(cls_list) >= 32 else len(cls_list)
         executor = ThreadPoolExecutor(nthreads)
@@ -136,4 +136,3 @@ if __name__ == '__main__':
     name = 'java.awt'
     print('Starting dry run ... ')
     scrape_package(name, url)
-

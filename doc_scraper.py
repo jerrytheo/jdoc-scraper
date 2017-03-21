@@ -10,6 +10,7 @@ For license see LICENSE.
 '''
 
 import os
+import sys
 import json
 from concurrent.futures import ProcessPoolExecutor
 
@@ -17,13 +18,56 @@ from package_scraper import scrape_package
 
 _BASE_URL = 'https://docs.oracle.com/javase/7/docs/api/'
 
+_STATUS_TEXT = '    {status}    {package:46}    {parsed:>5}    {total:>5}' \
+             + '    {misc}'
+_SUCCESS = '\033[92mSUCCESS\033[0m'
+_PARTIAL = '\033[93mPARTIAL\033[0m'
+_FAILURE = '\033[91mFAILURE\033[0m'
+
+
 with open('pkg_list.json') as jsonfile:
     packages = json.load(jsonfile)
-    header = '    {:>7}    {:^46}    {:>5}    {:>5}    {}'
-    print(header.format('status', 'package', 'done', 'total', 'errors'))
 
-    with ProcessPoolExecutor(4) as executor:
-        for key in packages:
-            name = key
-            url = _BASE_URL + packages[key]
-            executor.submit(scrape_package, name, url)
+# If retry is specified, run only for failed/partially parsed packages.
+if len(sys.argv) == 2 and sys.argv[1] == '--retry':
+    with open('pkg_retry') as retryfile:
+        retry_for = retryfile.read()
+    retry_for = retry_for.split()
+    packages = { key: packages[key] for key in packages if key in retry_for }
+
+header = '    {:>7}    {:^46}    {:>5}    {:>5}    {}'
+print(header.format('status', 'package', 'done', 'total', 'errors'))
+
+futures = {}
+# Each package is parsed on one of 8 processes.
+with ProcessPoolExecutor(8) as executor:
+    for key in packages:
+        name = key
+        url = _BASE_URL + packages[key]
+        futures[name] = executor.submit(scrape_package, name, url)
+
+success = 0
+partial = 0
+failure = 0
+empties = 0
+with open('pkg_retry', 'w') as rf:
+    for name in futures:
+        try:
+            result = futures[name].result()
+            if result == 'success':
+                success += 1
+            elif result == 'partial':
+                rf.write(name + '\n')
+                partial += 1
+            elif result == 'empty':
+                empties += 1
+        except:
+            rf.write(name + '\n')
+            failure += 1
+
+print('\nTotal packages:', success+partial+failure+empties, 'packages')
+print('Complete:', success, 'packages')
+print('Incomplete:', partial, 'packages')
+print('Failed:', failure, 'packages')
+print('Empty:', empties, 'packages')
+

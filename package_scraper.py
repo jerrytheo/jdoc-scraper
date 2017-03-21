@@ -11,6 +11,7 @@ import os
 import requests
 from multiprocessing import Lock
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
 
 from misc import get_absolute_url, write_xml
 from class_scraper import scrape_class
@@ -44,52 +45,69 @@ def scrape_package(package_name, package_url):
         package_page = requests.get(package_url)
         package_soup = BeautifulSoup(package_page.text, 'lxml')
 
-        desc = package_soup.find(class_='docSummary').div.text
-        desc = ' '.join(desc.split())
+        docSumm = package_soup.find(class_='docSummary')
+        if docSumm:
+            desc = docSumm.div.text
+            desc = ' '.join(desc.split())
+        else:
+            desc = None
         package_info = {
-                'name': package_name,
-                'description': desc
-                }
+            'name': package_name,
+            'description': desc
+            }
 
         # Classes are in a <table> captioned 'Class Summary'. Each
         # class is represented by a row in the table, where the
         # first column is its name and the last one is its
         # description.
 
-        tbl = package_soup.find('span',
-                string = 'Class Summary').parent.parent
+        span = package_soup.find('span', string = 'Class Summary')
+        if span:
+            tbl = span.parent.parent
+        else:
+            return 'empty'
         cls_list = tbl.find_all('tr')[1:]           # First row is headers.
 
     except Exception as exc:
         statust = _STATUS_TEXT.format(status=_FAILURE,
                 package=package_name, parsed='-', total='-', misc=exc)
+        with print_lock:
+            print(statust)
+        raise
 
     else:
         successes = 0
         package_info['classes'] = []
+        
+        # Each class is parsed on one of 32 threads.
+        nthreads = 32 if len(cls_list) >= 32 else len(cls_list)
+        executor = ThreadPoolExecutor(nthreads)
         for cls_ in cls_list:
-
+            cls_info = {}
             try:
-                cls_name = package_name + '.' \
-                        + cls_.find('td', 'colFirst').a.text
-                cls_desc = ' '.join(cls_.find('div', 'block').text.split())
-                cls_info = {
-                        'name': cls_name,
-                        'description': cls_desc,
-                        }
+                # Name.
+                cls_info['name'] = package_name + '.' \
+                                 + cls_.find('td', 'colFirst').a.text
+                # Description.
+                desc_tag = cls_.find('div', 'block')
+                if desc_tag:
+                    cls_info['description'] = ' '.join(desc_tag.text.split())
+                else:
+                    cls_info['description'] = None
+                # Methods.
                 cls_url = get_absolute_url(package_url,
                         cls_.find('td', 'colFirst').a['href'])
                 cls_page = requests.get(cls_url)
                 cls_soup = BeautifulSoup(cls_page.text, 'lxml')
-                cls_info['methods'] = scrape_class(cls_soup, cls_name)
-
+                future = executor.submit(scrape_class, cls_soup, cls_name)
+                cls_info['methods'] = future.result()
             except Exception as exc:
                 with open(log_path, 'a') as log_file:
                     log_file.write('%s:%s\n' % (cls_name, str(exc)))
-
             else:
-                successes = successes + 1
+                successes +=  1
                 package_info['classes'].append(cls_info)
+        executor.shutdown()
 
         if successes == len(cls_list):
             status = _SUCCESS
@@ -102,9 +120,13 @@ def scrape_package(package_name, package_url):
 
         write_xml(package_info)
 
-    finally:
         with print_lock:
             print(statust)
+
+        if status == _SUCCESS:
+            return 'success'
+        else:
+            return 'partial'
 
 
 if __name__ == '__main__':

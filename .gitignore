@@ -2,3 +2,4 @@ __pycache__/
 docs/
 logs/
 *.swp
+pkg_retry

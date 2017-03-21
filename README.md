@@ -33,7 +33,7 @@ There are three modules and one script present in this package,
 
 4. `misc.py` --- Contains two functions,
     1. `get_absolute_url(current_url, relative_url)` --- Generates an absolute url from the current url and a url specified relative to the current url.
-    2. `write_xml(package_info)` --- Generates the XML tree from the package info and writes it to a file at docs/<package name>.xml.
+    2. `write_xml(package_info)` --- Generates the XML tree from the package info and writes it to a file at `docs/<package name>.xml`.
 
 The function `scrape_package` executes `scrape_class` for each class on a separate thread, up to a maximum of 32 threads using `concurrent.futures.ThreadPoolExecutor`. Further, the `doc_scrape.py` script executes `scrape_package` for each package on a separate process, with a maximum of 8 concurrent processes.
 

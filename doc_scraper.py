@@ -25,6 +25,7 @@ _PARTIAL = '\033[93mPARTIAL\033[0m'
 _FAILURE = '\033[91mFAILURE\033[0m'
 
 
+# Read the list of packages.
 with open('pkg_list.json') as jsonfile:
     packages = json.load(jsonfile)
 
@@ -35,8 +36,13 @@ if len(sys.argv) == 2 and sys.argv[1] == '--retry':
     retry_for = retry_for.split()
     packages = { key: packages[key] for key in packages if key in retry_for }
 
+# Print the header.
 header = '    {:>7}    {:^46}    {:>5}    {:>5}    {}'
 print(header.format('status', 'package', 'done', 'total', 'errors'))
+
+# Create required folders.
+for dir_ in ['logs', 'docs']:
+    if not os.path.isdir(dir_): os.mkdir(dir_)
 
 futures = {}
 # Each package is parsed on one of 8 processes.
@@ -61,9 +67,10 @@ with open('pkg_retry', 'w') as rf:
                 partial += 1
             elif result == 'empty':
                 empties += 1
-        except:
+        except Exception as exc:
             rf.write(name + '\n')
             failure += 1
+            print(str(exc))
 
 print('\nTotal packages:', success+partial+failure+empties, 'packages')
 print('Complete:', success, 'packages')

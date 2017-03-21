@@ -86,8 +86,9 @@ def scrape_package(package_name, package_url):
             cls_info = {}
             try:
                 # Name.
-                cls_info['name'] = package_name + '.' \
-                                 + cls_.find('td', 'colFirst').a.text
+                cls_name = package_name + '.' \
+                         + cls_.find('td', 'colFirst').a.text
+                cls_info['name'] = cls_name
                 # Description.
                 desc_tag = cls_.find('div', 'block')
                 if desc_tag:

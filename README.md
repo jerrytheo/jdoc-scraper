@@ -1,14 +1,10 @@
 
 # jDoc Scraper
 
-Set of scripts that crawl the online [Java
-documentation](http://docs.oracle.com/javase/7/docs/api/overview-summary.html)
-to scrape information about the methods and constructors of each class,
-organised by package names. The result of the scrape is stored as XML files,
-with each file corresponding to one Java package.
+Set of scripts that crawl the online [Java documentation](http://docs.oracle.com/javase/7/docs/api/overview-summary.html) to scrape information about the methods and constructors of each class, organised by package names. The result of the scrape is stored as XML files, with each file corresponding to one Java package.
 
 ## XML Structure
-The structure of the xml file for a one package is as follows (the bracketed terms indicate attributes),
+The structure of the xml file for one package is as follows (the bracketed terms indicate attributes),
 ```
 package
     ├── name
@@ -43,10 +39,11 @@ The function `scrape_package` executes `scrape_class` for each class on a separa
 
 ## Dependencies
 
-The scripts have been written for Python 3.6.0 and requires the following external packages installable via `pip`,
+The scripts have been written for Python 3.6.0 and requires the following external packages, installable via `pip`,
 - `requests 2.13.0`
 - `lxml 3.7.3`
 - `beautifulsoup4 4.5.3`
+
 Further, execution of the script has not been verified on any operating system other than latest release of Arch Linux.
 
 ## Usage
@@ -71,14 +68,14 @@ The output of `./doc_scrape.py` is as follows,
     - Failed: Number of packages with `FAILURE` status.
     - Empties: Number of packages with no classes. These packages do not show up on the output table.
 
-Apart from the standard output, log files in the `logs` folder indicate the errors associated with parsing a class when the package has reported a `PARTIAL` status. These files are named, `<package name>.log`.
+Apart from the standard output, log files in the `logs` folder indicate the errors associated with parsing a class when the package has reported a `PARTIAL` status. These files are named `<package name>.log`.
 
 `doc_scape.py` may also be called as,
 ```
 $ ./doc_scrape.py --retry
 ```
 
-The retry flag reads a file `pkg_retry`, if it exists, and only parses those packages specified here. Every time `doc_scrape.py` is executed, all those packages that fail, or are partially scraped are written to `pkg_retry`. This allows the scraping to resume from only those packages that have failed the previous time.
+The retry flag reads a file `pkg_retry`, if it exists, and only parses those packages specified there. Every time `doc_scrape.py` is executed, all those packages that fail, or are partially scraped are written to `pkg_retry`. This allows the scraping to resume from only those packages that have failed the previous time.
 
 > **WARNING** Currently, the `logs`, `docs` and `pkg_retry` files are overwritten on each execution of `doc_scrape.py`.
 

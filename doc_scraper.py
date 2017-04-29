@@ -41,7 +41,7 @@ if len(sys.argv) == 2 and sys.argv[1] == '--retry':
 
 # Print the header.
 header = '    {:>7}    {:^46}    {:>5}    {:>5}    {}'
-print(header.format('status', 'package', 'done', 'total', 'errors'))
+print(header.format('STATUS', 'PACKAGE', 'DONE', 'TOTAL', 'ERRORS'))
 
 # Create required folders.
 for dir_ in ['logs', 'docs']:

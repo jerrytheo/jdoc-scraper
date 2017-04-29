@@ -1,4 +1,3 @@
-
 # jDoc Scraper
 
 Set of scripts that crawl the online [Java documentation](http://docs.oracle.com/javase/7/docs/api/overview-summary.html) to scrape information about the methods and constructors of each class, organised by package names. The result of the scrape is stored as XML files, with each file corresponding to one Java package.
@@ -39,12 +38,12 @@ The function `scrape_package` executes `scrape_class` for each class on a separa
 
 ## Dependencies
 
-The scripts have been written for Python 3.6.0 and requires the following external packages, installable via `pip`,
+The scripts have been written for Python 3.6.0 and require the following external packages, installable via `pip`,
 - `requests 2.13.0`
 - `lxml 3.7.3`
 - `beautifulsoup4 4.5.3`
 
-Further, execution of the script has not been verified on any operating system other than latest release of Arch Linux.
+Further, execution of the script has not been verified on any operating system other than Arch Linux.
 
 ## Usage
 
